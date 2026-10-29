@@ -18,8 +18,8 @@
         <div class="relative w-32 h-32 mx-auto mb-6 bg-indigo-50 rounded-full p-3 shadow-inner border-2 border-indigo-100 flex items-center justify-center">
             <i class="fa-solid fa-graduation-cap text-6xl text-indigo-600"></i>
         </div>
-<h1 class="text-xl font-bold" id="dashboard-school-title">ระบบจัดการและตรวจงานนักเรียน</h1>
-<p class="text-xs text-indigo-200" id="dashboard-school-sub">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2" id="portal-school-name">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</h1>
+        <p class="text-indigo-600 font-semibold mb-8 text-sm md:text-base">ระบบติดตามงานค้างนักเรียน</p>
 
         <div class="space-y-4">
             <a href="student.html" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition duration-200 flex items-center justify-center gap-3 text-lg">
@@ -66,8 +66,9 @@
                     </button>
                     <i class="fa-solid fa-graduation-cap text-3xl text-yellow-300"></i>
                     <div>
+                        <!-- แก้ไขให้รองรับการเปลี่ยนชื่อทั้งบรรทัดบนและบรรทัดล่าง -->
                         <h1 class="text-xl font-bold" id="dashboard-school-title">ระบบจัดการและตรวจงานนักเรียน</h1>
-                        <p class="text-xs text-indigo-200">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
+                        <p class="text-xs text-indigo-200" id="dashboard-school-sub">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
                     </div>
                 </div>
                 
@@ -323,7 +324,12 @@
         function updateSchoolNameDisplay() {
             document.getElementById('portal-school-name').innerText = store.schoolName;
             document.getElementById('portal-footer').innerText = `งานเทคโนโลยีสารสนเทศและการศึกษา © ${store.schoolName}`;
-            document.getElementById('dashboard-school-title').innerText = `ระบบจัดการและตรวจงานนักเรียน (${store.schoolName})`;
+            document.getElementById('dashboard-school-title').innerText = `ระบบจัดการและตรวจงานนักเรียน`;
+            
+            // อัปเดตบรรทัดย่อยใต้หัวข้อให้เปลี่ยนตามแอดมินด้วย
+            const subEl = document.getElementById('dashboard-school-sub');
+            if (subEl) subEl.innerText = store.schoolName;
+
             document.getElementById('admin-school-name-input').value = store.schoolName;
         }
 
@@ -595,7 +601,7 @@
                 let row = `<tr class="border-b hover:bg-slate-50 border-slate-300"><td class="p-3 font-semibold text-indigo-600 border-r border-slate-400 text-center">${s.studentId}</td><td class="p-3 font-medium border-r border-slate-400 text-slate-800">${s.name}</td>`;
                 cols.forEach(c => {
                     let assign = store.assignments.find(a => String(a.studentId) === String(s.studentId) && String(a.columnId) === String(c.id));
-                    let statusVal = assign ? assign.status : 'pending'; // ค่าเริ่มต้นเป็น pending (ยังไม่ส่ง)
+                    let statusVal = assign ? assign.status : 'pending';
                     let selectBg = 'bg-rose-100 border-rose-300 text-rose-800 font-semibold';
                     if (statusVal === 'submitted') selectBg = 'bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold';
                     if (statusVal === 'incomplete') selectBg = 'bg-amber-100 border-amber-300 text-amber-800 font-semibold';
@@ -614,7 +620,6 @@
             });
         }
 
-        // ฟังก์ชันกดปุ่มติ๊กถูก (✅) เพื่อเปลี่ยนสถานะนักเรียนทุกคนในคอลัมน์นั้นให้เป็น "ส่ง"
         function markAllSubmitted(columnId) {
             if (confirm("ต้องการเปลี่ยนสถานะให้นักเรียนทุกคนในชิ้นงานนี้เป็น 'ส่งแล้ว' ใช่หรือไม่?")) {
                 const subClassVal = document.getElementById('teacher-class-select').value;
