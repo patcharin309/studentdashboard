@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบตรวจสอบการส่งงานนักเรียน</title>
+    <title>ระบบตรวจสอบการส่งงานนักเรียน - โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -18,13 +18,13 @@
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-graduation-cap text-3xl text-yellow-300"></i>
                 <div>
-                    <h1 class="text-xl font-bold">ระบบตรวจสอบการส่งงานนักเรียน</h1>
-                    <p class="text-xs text-indigo-200" id="school-name-display">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
+                    <h1 class="text-xl font-bold" id="school-title-header">ระบบตรวจสอบการส่งงานนักเรียน</h1>
+                    <p class="text-xs text-indigo-200">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
                 </div>
             </div>
-            <span class="bg-indigo-800 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-200 flex items-center gap-1.5">
-                <i class="fa-solid fa-user-graduate text-yellow-300"></i> สำหรับนักเรียน
-            </span>
+            <a href="index.html" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded-xl text-xs font-semibold text-indigo-200 flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-house"></i> หน้าแรก / เข้าสู่ระบบครู
+            </a>
         </div>
     </header>
 
@@ -34,13 +34,13 @@
                 <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                     <i class="fa-solid fa-magnifying-glass-chart"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">ค้นหาภาระงานและสถานะการส่ง</h2>
-                <p class="text-slate-500 mb-6 text-sm">กรอกรหัสประจำตัวนักเรียนของคุณเพื่อตรวจสอบการส่งงานและคะแนน</p>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ตรวจสอบสถานะการส่งงาน</h2>
+                <p class="text-slate-500 mb-6 text-sm">กรอกรหัสประจำตัวนักเรียนของคุณเพื่อตรวจสอบงานค้างและผลการส่ง</p>
                 
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input type="text" id="student-search-id" placeholder="พิมพ์รหัสประจำตัว เช่น 1001" class="flex-1 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-lg font-semibold">
                     <button onclick="searchStudentWork()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium shadow transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อมูล
+                        <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
                     </button>
                 </div>
             </div>
@@ -66,9 +66,9 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b text-slate-500 text-sm bg-slate-50">
-                                    <th class="p-4 border-r border-slate-200">วิชา / ห้อง</th>
+                                    <th class="p-4 border-r border-slate-200">วิชา / ครูผู้สอน</th>
                                     <th class="p-4 border-r border-slate-200">ชื่องาน / รายละเอียด</th>
-                                    <th class="p-4 text-center border-r border-slate-200">สถานะ</th>
+                                    <th class="p-4 text-center">สถานะการส่ง</th>
                                 </tr>
                             </thead>
                             <tbody id="student-work-table-body">
@@ -81,45 +81,49 @@
     </main>
 
     <script>
-        let store = {
-            schoolName: localStorage.getItem('schoolName') || 'โรงเรียนยุวพุทธิศึกษาอุปถัมภ์',
-            students: [],
-            taskColumns: [],
-            assignments: [],
-            scriptUrl: localStorage.getItem('scriptUrl') || ''
-        };
-
         window.onload = function() {
-            document.getElementById('school-name-display').innerText = store.schoolName;
-            fetchDataFromGAS();
+            const schoolName = localStorage.getItem('schoolName');
+            if (schoolName) {
+                document.getElementById('school-title-header').innerText = `ระบบตรวจสอบการส่งงานนักเรียน (${schoolName})`;
+            }
         };
 
         function searchStudentWork() {
             const inputId = document.getElementById('student-search-id').value.trim();
             if (!inputId) return alert("กรุณากรอกรหัสประจำตัวนักเรียน");
 
-            const student = store.students.find(s => s.studentId === inputId);
-            if (!student) return alert("ไม่พบรหัสประจำตัวนักเรียนนี้ในระบบ");
+            // ดึงข้อมูลล่าสุดจาก localStorage ที่แชร์ร่วมกับหน้าครู
+            const students = JSON.parse(localStorage.getItem('my_students')) || [];
+            const taskColumns = JSON.parse(localStorage.getItem('my_tasks')) || [];
+            const assignments = JSON.parse(localStorage.getItem('my_assignments')) || [];
+
+            const student = students.find(s => String(s.studentId) === String(inputId));
+            if (!student) {
+                alert("ไม่พบรหัสประจำตัวนักเรียนนี้ในระบบ (กรุณาให้คุณครูตรวจสอบรายชื่อในระบบ)");
+                return;
+            }
 
             document.getElementById('res-student-name').innerText = student.name;
             document.getElementById('res-student-id').innerText = student.studentId;
             document.getElementById('res-student-class').innerText = student.className;
 
-            const myCols = store.taskColumns.filter(c => c.className === student.className);
-            const myWorks = store.assignments.filter(a => a.studentId === inputId);
-            const submittedCount = myWorks.filter(w => w.status === 'submitted').length;
-
-            document.getElementById('res-student-summary').innerText = `ส่งแล้ว ${submittedCount}/${myCols.length} งาน`;
-
+            // กรองงานเฉพาะห้องของนักเรียนคนนี้
+            const myCols = taskColumns.filter(c => c.className === student.className);
+            
+            let submittedCount = 0;
             const tbody = document.getElementById('student-work-table-body');
             tbody.innerHTML = '';
 
             if (myCols.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400">ยังไม่มีการมอบหมายงานในระบบ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400">ยังไม่มีการมอบหมายงานในห้องเรียนนี้</td></tr>`;
+                document.getElementById('res-student-summary').innerText = `ส่งแล้ว 0/0 งาน`;
             } else {
                 myCols.forEach(col => {
-                    let w = store.assignments.find(a => a.studentId === inputId && a.columnId === col.id);
-                    let statusVal = w ? w.status : 'pending';
+                    // ค้นหาว่านักเรียนคนนี้ส่งงานชิ้นนี้หรือยัง
+                    let assign = assignments.find(a => String(a.studentId) === String(inputId) && String(a.columnId) === String(col.id));
+                    let statusVal = assign ? assign.status : 'submitted'; // ค่าเริ่มต้นเป็น submitted หรือตามที่ครูเลือก
+
+                    if (statusVal === 'submitted') submittedCount++;
 
                     let statusBadge = statusVal === 'submitted' 
                         ? `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">✅ ส่งแล้ว</span>`
@@ -129,29 +133,22 @@
 
                     tbody.innerHTML += `
                         <tr class="border-b hover:bg-slate-50 transition">
-                            <td class="p-4 font-medium border-r border-slate-200">${col.subject} (${col.className})</td>
+                            <td class="p-4 font-medium border-r border-slate-200">
+                                <div class="text-indigo-600 font-bold">${col.subject}</div>
+                                <div class="text-xs text-slate-400">${col.teacher || ''}</div>
+                            </td>
                             <td class="p-4 border-r border-slate-200">
                                 <div class="font-semibold text-slate-800">${col.name}</div>
                                 <div class="text-xs text-slate-400">${col.detail || '-'}</div>
                             </td>
-                            <td class="p-4 text-center border-r border-slate-200">${statusBadge}</td>
+                            <td class="p-4 text-center">${statusBadge}</td>
                         </tr>
                     `;
                 });
+                document.getElementById('res-student-summary').innerText = `ส่งแล้ว ${submittedCount}/${myCols.length} งาน`;
             }
 
             document.getElementById('student-result').classList.remove('hidden');
-        }
-
-        function fetchDataFromGAS() {
-            if (!store.scriptUrl) return;
-            fetch(`${store.scriptUrl}?action=getData`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.students && data.students.length > 0) store.students = data.students;
-                    if (data.assignments && data.assignments.length > 0) store.assignments = data.assignments;
-                    if (data.taskColumns && data.taskColumns.length > 0) store.taskColumns = data.taskColumns;
-                }).catch(err => console.log("FETCH ERROR", err));
         }
     </script>
 </body>
