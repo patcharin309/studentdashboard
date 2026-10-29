@@ -34,7 +34,7 @@
         <p class="text-xs text-slate-400 mt-8" id="portal-footer">งานเทคโนโลยีสารสนเทศและการศึกษา © โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
     </div>
 
-    <!-- Modal รหัสผ่านเข้าสู่ระบบครู ("BOYSS2021") -->
+    <!-- Modal รหัสผ่านเข้าสู่ระบบครูพร้อมปุ่มแสดงรหัสผ่าน -->
     <div id="teacher-login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4">
             <div class="text-center">
@@ -43,7 +43,12 @@
                 <p class="text-xs text-slate-400">กรุณากรอกรหัสผ่านเพื่อป้องกันไม่ให้นักเรียนเข้ามารบกวน</p>
             </div>
             <form onsubmit="handleTeacherLogin(event)" class="space-y-3">
-                <input type="password" id="teacher-pass-input" placeholder="กรอกรหัสผ่านครู" required class="w-full border border-slate-300 rounded-xl p-3 text-sm text-center font-bold tracking-widest focus:ring-2 focus:ring-indigo-500">
+                <div class="relative">
+                    <input type="password" id="teacher-pass-input" placeholder="กรอกรหัสผ่านครู" required class="w-full border border-slate-300 rounded-xl p-3 pr-10 text-sm text-center font-bold tracking-widest focus:ring-2 focus:ring-indigo-500">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i id="eye-icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closeTeacherLoginModal()" class="px-4 py-2 rounded-xl text-slate-600 text-sm">ยกเลิก</button>
                     <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium shadow hover:bg-indigo-700">ยืนยัน</button>
@@ -52,7 +57,7 @@
         </div>
     </div>
 
-    <!-- Teacher Dashboard (หน้าจัดการของครูและแอดมิน) -->
+    <!-- Teacher Dashboard -->
     <div id="teacher-dashboard" class="hidden fixed inset-0 bg-slate-100 overflow-y-auto z-50">
         <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -92,13 +97,11 @@
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1"><i class="fa-solid fa-user-tie text-indigo-600 mr-1"></i> ครูประจำวิชา</label>
                         <select id="filter-teacher-select" onchange="renderMatrixTable()" class="w-full border border-slate-300 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500 bg-slate-50">
-                            <!-- Render via JS -->
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> วิชาและห้องเรียน</label>
                         <select id="teacher-class-select" onchange="renderMatrixTable()" class="w-full border border-slate-300 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500 bg-slate-50">
-                            <!-- Render via JS -->
                         </select>
                     </div>
                     <div>
@@ -116,7 +119,7 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 border-b bg-slate-100 font-bold text-slate-700 flex justify-between items-center">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-table text-indigo-600 text-lg"></i> ตารางตรวจงานนักเรียน</span>
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-table text-indigo-600 text-lg"></i> ตารางตรวจงานนักเรียน (แสดงรหัสด้านหน้า)</span>
                     </div>
                     <div class="overflow-x-auto max-w-full">
                         <table class="w-full border-collapse text-sm">
@@ -127,7 +130,7 @@
                 </div>
             </section>
 
-            <!-- TAB 2: MANAGE STUDENTS (นำเข้าจาก Google Sheet / CSV ได้) -->
+            <!-- TAB 2: MANAGE STUDENTS -->
             <section id="sec-students" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                     <h3 class="font-bold text-slate-800 text-lg border-b pb-2"><i class="fa-solid fa-file-excel text-emerald-600 mr-1"></i> นำเข้ารายชื่อนักเรียนจาก Google Sheet / CSV</h3>
@@ -143,7 +146,6 @@
                         <input type="text" id="new-s-id" placeholder="รหัสประจำตัว (เช่น 1001)" required class="border border-slate-300 rounded-xl p-2.5 text-sm">
                         <input type="text" id="new-s-name" placeholder="ชื่อ - นามสกุล นักเรียน" required class="border border-slate-300 rounded-xl p-2.5 text-sm md:col-span-2">
                         <select id="new-s-class" required class="border border-slate-300 rounded-xl p-2.5 text-sm bg-white">
-                            <!-- Render via JS -->
                         </select>
                         <button type="submit" class="md:col-span-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl text-sm transition">
                             + เพิ่มนักเรียนรายบุคคล
@@ -174,7 +176,6 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
                     <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-chalkboard-user text-indigo-600 mr-2"></i>สรุปภาพรวมการส่งงานประจำห้อง</h2>
                     <select id="homeroom-class-select" onchange="renderHomeroomDashboard()" class="border border-slate-300 rounded-xl p-2.5 text-sm bg-white">
-                        <!-- Render via JS -->
                     </select>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-x-auto">
@@ -193,7 +194,7 @@
         </main>
     </div>
 
-    <!-- Modal แอดมิน (MTSS / 0903) -->
+    <!-- Modal แอดมิน (เอาคำอธิบายออกแล้ว) -->
     <div id="admin-login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
@@ -202,7 +203,6 @@
             </div>
             
             <div id="admin-auth-box" class="space-y-3">
-                <p class="text-xs text-slate-500">กรุณากรอกชื่อผู้ใช้และรหัสผ่านแอดมิน (MTSS / 0903)</p>
                 <input type="text" id="admin-user" placeholder="ชื่อผู้ใช้" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
                 <input type="password" id="admin-pass" placeholder="รหัสผ่าน" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
                 <button onclick="verifyAdmin()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm transition">เข้าสู่ระบบแอดมิน</button>
@@ -303,7 +303,6 @@
                 }
             });
 
-            // Admin Checkboxes
             const cbContainer = document.getElementById('adm-class-checkboxes');
             if (cbContainer) {
                 cbContainer.innerHTML = ALL_CLASSES.map(c => `
@@ -315,13 +314,26 @@
             }
         }
 
-        // ระบบรหัสผ่านครู "BOYSS2021"
+        // ระบบรหัสผ่านครู "BOYSS2021" พร้อมปุ่มกดแสดง/ซ่อนรหัสผ่าน
         function openTeacherLoginModal() {
             document.getElementById('teacher-login-modal').classList.remove('hidden');
         }
         function closeTeacherLoginModal() {
             document.getElementById('teacher-login-modal').classList.add('hidden');
             document.getElementById('teacher-pass-input').value = '';
+            document.getElementById('teacher-pass-input').type = 'password';
+            document.getElementById('eye-icon').className = 'fa-solid fa-eye';
+        }
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('teacher-pass-input');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                passInput.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye';
+            }
         }
         function handleTeacherLogin(e) {
             e.preventDefault();
@@ -385,7 +397,6 @@
             alert("เปลี่ยนชื่อโรงเรียนสำเร็จ!");
         }
 
-        // แอดมินเพิ่มครูและรายวิชา
         function addTeacherSubject() {
             const name = document.getElementById('adm-t-name').value.trim();
             const subject = document.getElementById('adm-t-subject').value.trim();
@@ -430,7 +441,6 @@
             });
         }
 
-        // จัดการฟิลเตอร์หน้าครูผู้สอน
         function renderTeacherFilters() {
             const tSelect = document.getElementById('filter-teacher-select');
             const uniqueTeachers = [...new Set(store.teachers.map(t => t.name))];
@@ -452,7 +462,6 @@
             cSelect.innerHTML = html || '<option value="">ไม่มีวิชาสอน</option>';
         }
 
-        // จัดการนักเรียน & นำเข้า Google Sheet / CSV
         function handleAddStudent(e) {
             e.preventDefault();
             const studentId = document.getElementById('new-s-id').value.trim();
@@ -522,7 +531,7 @@
             reader.readAsText(file, 'UTF-8');
         }
 
-        // ตาราง Matrix ตรวจงาน
+        // ตาราง Matrix ตรวจงาน (เพิ่มช่องรหัสด้านหน้า)
         function renderMatrixTable() {
             const teacherName = document.getElementById('filter-teacher-select').value;
             const subClassVal = document.getElementById('teacher-class-select').value;
@@ -535,11 +544,16 @@
             const cols = store.taskColumns.filter(c => c.teacher === teacherName && c.subject === subject && c.className === className);
             const students = store.students.filter(s => s.className === className);
 
-            let r1 = `<tr class="border-b bg-slate-100 text-slate-800 font-bold border-black"><th class="p-3 border-r border-slate-400 w-64 text-left">ชื่อ - นามสกุล / งาน</th>`;
-            let r2 = `<tr class="border-b bg-slate-50 text-slate-700 font-bold border-black"><th class="p-3 border-r border-slate-400 text-left">รายละเอียด</th>`;
+            let r1 = `<tr class="border-b bg-slate-100 text-slate-800 font-bold border-black">
+                        <th class="p-3 border-r border-slate-400 w-24 text-center">รหัส</th>
+                        <th class="p-3 border-r border-slate-400 w-56 text-left">ชื่อ - นามสกุล</th>`;
+            let r2 = `<tr class="border-b bg-slate-50 text-slate-700 font-bold border-black">
+                        <th class="p-3 border-r border-slate-400 text-center">-</th>
+                        <th class="p-3 border-r border-slate-400 text-left">รายละเอียดชิ้นงาน</th>`;
 
             if (cols.length === 0) {
-                r1 += `<th class="p-3 text-slate-400 font-normal">ยังไม่มีชิ้นงาน (กดสร้างชิ้นงานด้านบน)</th>`; r2 += `<th class="p-3"></th>`;
+                r1 += `<th class="p-3 text-slate-400 font-normal">ยังไม่มีชิ้นงาน (กดสร้างชิ้นงานด้านบน)</th>`; 
+                r2 += `<th class="p-3"></th>`;
             } else {
                 cols.forEach(c => {
                     r1 += `<th class="p-3 border-r border-slate-300 text-center min-w-[140px]">${c.name}</th>`;
@@ -554,12 +568,14 @@
             thead.innerHTML = r1 + '</tr>' + r2 + '</tr>';
 
             if (students.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" class="p-6 text-center text-slate-400">ยังไม่มีรายชื่อนักเรียนในห้องนี้</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${cols.length + 2}" class="p-6 text-center text-slate-400">ยังไม่มีรายชื่อนักเรียนในห้องนี้</td></tr>`;
                 return;
             }
 
             students.forEach(s => {
-                let row = `<tr class="border-b hover:bg-slate-50 border-slate-300"><td class="p-3 font-medium border-r border-slate-400 text-slate-800">${s.name}</td>`;
+                let row = `<tr class="border-b hover:bg-slate-50 border-slate-300">
+                            <td class="p-3 font-semibold text-indigo-600 border-r border-slate-400 text-center">${s.studentId}</td>
+                            <td class="p-3 font-medium border-r border-slate-400 text-slate-800">${s.name}</td>`;
                 cols.forEach(c => {
                     let assign = store.assignments.find(a => a.studentId === s.studentId && a.columnId === c.id);
                     let statusVal = assign ? assign.status : 'submitted';
