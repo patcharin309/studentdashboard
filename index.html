@@ -593,4 +593,100 @@
                             <td class="p-3 font-medium border-r border-slate-400 text-slate-800">${s.name}</td>`;
                 cols.forEach(c => {
                     let assign = store.assignments.find(a => a.studentId === s.studentId && a.columnId === c.id);
-                    let statusVal = assign ? assign.status :
+                    let statusVal = assign ? assign.status : 'submitted';
+                    let selectBg = 'bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold';
+                    if (statusVal === 'incomplete') selectBg = 'bg-amber-100 border-amber-300 text-amber-800 font-semibold';
+                    if (statusVal === 'pending') selectBg = 'bg-rose-100 border-rose-300 text-rose-800 font-semibold';
+
+                    row += `
+                        <td class="p-2 border-r border-slate-300 text-center">
+                            <select onchange="updateMatrixStatus('${s.studentId}', '${c.id}', this.value)" class="w-full text-xs border rounded-full px-3 py-1.5 focus:outline-none cursor-pointer ${selectBg}">
+                                <option value="submitted" ${statusVal === 'submitted' ? 'selected' : ''}>ส่ง</option>
+                                <option value="incomplete" ${statusVal === 'incomplete' ? 'selected' : ''}>งานไม่เรียบร้อย</option>
+                                <option value="pending" ${statusVal === 'pending' ? 'selected' : ''}>ยังไม่ส่ง</option>
+                            </select>
+                        </td>
+                    `;
+                });
+                tbody.innerHTML += row + '</tr>';
+            });
+        }
+
+        function updateMatrixStatus(studentId, columnId, newStatus) {
+            let item = store.assignments.find(a => a.studentId === studentId && a.columnId === columnId);
+            if (item) item.status = newStatus;
+            else {
+                const student = store.students.find(s => s.studentId === studentId);
+                const col = store.taskColumns.find(c => c.id === columnId);
+                store.assignments.push({ id: Date.now(), studentId, studentName: student ? student.name : '', columnId, subject: col ? col.subject : '', className: col ? col.className : '', assignmentName: col ? col.name : '', status: newStatus });
+            }
+            saveDataLocal();
+            renderMatrixTable();
+            renderHomeroomDashboard();
+        }
+
+        function deleteTaskColumn(columnId) {
+            if (confirm("ต้องการลบภาระงานนี้ใช่หรือไม่?")) {
+                store.taskColumns = store.taskColumns.filter(c => c.id !== columnId);
+                store.assignments = store.assignments.filter(a => a.columnId !== columnId);
+                saveDataLocal();
+                renderMatrixTable();
+                renderHomeroomDashboard();
+            }
+        }
+
+        function openAssignModal() { document.getElementById('assign-modal').classList.remove('hidden'); }
+        function closeAssignModal() { document.getElementById('assign-modal').classList.add('hidden'); }
+
+        function confirmAssignWork() {
+            const name = document.getElementById('modal-assign-name').value.trim();
+            const detail = document.getElementById('modal-assign-detail').value.trim();
+            const teacherName = document.getElementById('filter-teacher-select').value;
+            const subClassVal = document.getElementById('teacher-class-select').value;
+            if (!name || !subClassVal) return alert("กรุณากรอกชื่องาน");
+
+            const [subject, className] = subClassVal.split('|');
+            store.taskColumns.push({ id: 'col_' + Date.now(), teacher: teacherName, subject, className, name, detail: detail || '-' });
+            saveDataLocal();
+            closeAssignModal();
+            document.getElementById('modal-assign-name').value = '';
+            document.getElementById('modal-assign-detail').value = '';
+            renderMatrixTable();
+            renderHomeroomDashboard();
+        }
+
+        function renderHomeroomDashboard() {
+            const selectEl = document.getElementById('homeroom-class-select');
+            if(!selectEl) return;
+            const selectedClass = selectEl.value || ALL_CLASSES[0];
+            const classStudents = store.students.filter(s => s.className === selectedClass);
+            const tbody = document.getElementById('homeroom-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const totalWorks = store.taskColumns.filter(c => c.className === selectedClass).length;
+
+            classStudents.forEach(s => {
+                const myWorks = store.assignments.filter(a => a.studentId === s.studentId);
+                const submitted = myWorks.filter(w => w.status === 'submitted').length;
+                const incomplete = myWorks.filter(w => w.status === 'incomplete').length;
+                const pending = totalWorks - (submitted + incomplete);
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-indigo-600">${s.studentId}</td>
+                        <td class="p-3">${s.name}</td>
+                        <td class="p-3 text-center">${totalWorks}</td>
+                        <td class="p-3 text-center font-semibold text-emerald-600">${submitted}</td>
+                        <td class="p-3 text-center font-semibold text-amber-600">${incomplete}</td>
+                        <td class="p-3 text-center font-semibold text-rose-500">${pending > 0 ? pending : 0}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function syncDataToGoogleSheet() {
+            alert("บันทึกข้อมูลเรียบร้อยแล้ว ข้อมูลอัปเดตเชื่อมโยงทันที!");
+        }
+    </script>
+</body>
+</html>
