@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบติดตามการส่งงานนักเรียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- Header Navigation -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-graduation-cap text-3xl text-yellow-300"></i>
+                <div>
+                    <h1 class="text-xl font-bold">ระบบติดตามการส่งงานนักเรียน</h1>
+                    <p class="text-xs text-indigo-200" id="school-name-display">โรงเรียนยุวพุทธิศึกษาอุปถัมภ์</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Role Tabs -->
+            <div class="flex bg-indigo-800 p-1 rounded-xl text-sm font-medium flex-wrap justify-center gap-1">
+                <button onclick="switchRole('student')" id="tab-student" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5 bg-white text-indigo-900 shadow font-semibold">
+                    <i class="fa-solid fa-user-graduate"></i> นักเรียน
+                </button>
+                <button onclick="switchRole('homeroom')" id="tab-homeroom" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5 text-indigo-200 hover:text-white">
+                    <i class="fa-solid fa-chalkboard-user"></i> ครูประจำชั้น
+                </button>
+                <button onclick="switchRole('teacher')" id="tab-teacher" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5 text-indigo-200 hover:text-white">
+                    <i class="fa-solid fa-book-bookmark"></i> ครูประจำวิชา
+                </button>
+                <button onclick="openAdminLoginModal()" id="tab-admin" class="px-3 py-2 rounded-lg transition flex items-center gap-1.5 text-indigo-200 hover:text-white">
+                    <i class="fa-solid fa-user-gear"></i> แอดมิน
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- ================= STUDENT VIEW ================= -->
+        <section id="view-student" class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center max-w-xl mx-auto">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ตรวจสอบสถานะการส่งงาน</h2>
+                <p class="text-slate-500 mb-6 text-sm">กรอกรหัสประจำตัวนักเรียนเพื่อดูภาระงานและคะแนนของคุณ</p>
+                
+                <div class="flex gap-2">
+                    <input type="text" id="student-search-id" placeholder="พิมพ์รหัสประจำตัว เช่น 1001" class="flex-1 border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center text-lg font-semibold">
+                    <button onclick="searchStudentWork()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-medium shadow transition">
+                        <i class="fa-solid fa-magnifying-glass mr-1"></i> ค้นหา
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student Results Area -->
+            <div id="student-result" class="hidden space-y-6">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-2xl shadow-md flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold" id="res-student-name">-</h3>
+                        <p class="text-indigo-100">รหัสประจำตัว: <span id="res-student-id">-</span> | ชั้นเรียน: <span id="res-student-class">-</span></p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-white/20 px-4 py-2 rounded-xl text-sm backdrop-blur-sm" id="res-student-summary">ส่งแล้ว 0/0 งาน</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b bg-slate-50 font-bold text-slate-700 flex justify-between items-center">
+                        <span><i class="fa-solid fa-list-check text-indigo-600 mr-2"></i>รายการภาระงานทั้งหมด</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-slate-500 text-sm bg-slate-50">
+                                    <th class="p-4 border-r border-slate-200">วิชา</th>
+                                    <th class="p-4 border-r border-slate-200">ชื่องาน / ชิ้นงาน</th>
+                                    <th class="p-4 text-center border-r border-slate-200">สถานะ</th>
+                                    <th class="p-4 text-center">คะแนน</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-work-table-body">
+                                <!-- Data rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOMEROOM TEACHER VIEW ================= -->
+        <section id="view-homeroom" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-chalkboard-user text-indigo-600 mr-2"></i>ภาพรวมงานนักเรียนประจำชั้น</h2>
+                    <p class="text-xs text-slate-500">เลือกชั้นเรียนเพื่อดูรายงานการส่งงานของนักเรียนทุกคนในห้อง</p>
+                </div>
+                <div class="w-full md:w-64">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">เลือกชั้นเรียนประจำชั้น</label>
+                    <select id="homeroom-class-select" onchange="renderHomeroomDashboard()" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-500">
+                        <!-- Rendered via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Homeroom Report Card & Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden space-y-4 p-6">
+                <div class="flex justify-between items-center border-b pb-4">
+                    <h3 class="font-bold text-slate-800" id="homeroom-title">สรุปสถานะการส่งงานประจำห้อง</h3>
+                    <button onclick="window.print()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border text-slate-600">
+                        <i class="fa-solid fa-print mr-1"></i> พิมพ์รายงาน
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b text-slate-500 bg-slate-50">
+                                <th class="p-3 border-r border-slate-200">รหัส</th>
+                                <th class="p-3 border-r border-slate-200">ชื่อ-นามสกุล</th>
+                                <th class="p-3 text-center border-r border-slate-200">รวมงานทั้งหมด</th>
+                                <th class="p-3 text-center border-r border-slate-200">ส่งแล้ว</th>
+                                <th class="p-3 text-center border-r border-slate-200">งานไม่เรียบร้อย</th>
+                                <th class="p-3 text-center border-r border-slate-200">ค้างส่ง</th>
+                                <th class="p-3 text-center">ความก้าวหน้า</th>
+                            </tr>
+                        </thead>
+                        <tbody id="homeroom-table-body">
+                            <!-- Rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TEACHER VIEW (MATRIX TABLE) ================= -->
+        <section id="view-teacher" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1"><i class="fa-solid fa-user-tie text-indigo-600 mr-1"></i> เลือกครูผู้สอน</label>
+                    <select id="teacher-select" onchange="onTeacherSelectChange()" class="w-full border border-slate-300 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+                        <!-- Render via JS -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1"><i class="fa-solid fa-book text-indigo-600 mr-1"></i> เลือกวิชาและชั้นเรียน</label>
+                    <select id="teacher-class-select" onchange="renderMatrixTable()" class="w-full border border-slate-300 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-indigo-500 bg-slate-50">
+                        <!-- Render via JS -->
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="openAssignModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus-circle"></i> + เพิ่มภาระงานใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Matrix Spreadsheet Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b bg-slate-100 font-bold text-slate-700 flex justify-between items-center">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-table text-indigo-600 text-lg"></i> ตารางสรุปการส่งงานประจำวิชา</span>
+                    <button onclick="syncDataToGoogleSheet()" class="text-xs bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2.5 rounded-xl shadow font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> บันทึกลง Google Sheet
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto max-w-full">
+                    <table class="w-full border-collapse text-sm">
+                        <thead id="matrix-thead">
+                            <!-- Render Matrix Headers via JS -->
+                        </thead>
+                        <tbody id="matrix-tbody" class="divide-y divide-slate-200 bg-white">
+                            <!-- Render Matrix Body via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN VIEW ================= -->
+        <section id="view-admin" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 border-l-indigo-600 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1"><i class="fa-solid fa-school text-indigo-600 mr-2"></i>เปลี่ยนชื่อโรงเรียน</h3>
+                        <p class="text-xs text-slate-500">พิมพ์ชื่อโรงเรียนที่ต้องการแสดงบนส่วนหัวของเว็บไซต์</p>
+                    </div>
+                    <button onclick="lockAdmin()" class="bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-semibold transition">
+                        <i class="fa-solid fa-lock mr-1"></i> ล็อกเอาท์แอดมิน
+                    </button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="school-name-input" placeholder="เช่น โรงเรียนยุวพุทธิศึกษาอุปถัมภ์" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm">
+                    <button onclick="saveSchoolName()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-xl text-sm font-medium transition">เปลี่ยนชื่อ</button>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div>
+                    <h3 class="font-bold text-slate-800 text-lg mb-1"><i class="fa-solid fa-link text-indigo-600 mr-2"></i>ตั้งค่าการเชื่อมต่อ Google Sheets</h3>
+                    <p class="text-xs text-slate-500 mb-2">วาง URL จาก Google Apps Script (Deploy Web App) เพื่อเชื่อมต่อฐานข้อมูลแบบ Real-time</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="saveScriptUrl()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium shadow transition">บันทึกลิงก์</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Manage Classes & Teachers -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="font-bold text-slate-800 text-lg border-b pb-2"><i class="fa-solid fa-chalkboard text-indigo-600 mr-2"></i>จัดการครูและรายวิชาที่สอน</h3>
+                    <form onsubmit="handleAddTeacher(event)" class="space-y-3">
+                        <input type="text" id="admin-teacher-name" placeholder="ชื่อ-นามสกุล ครู (เช่น ครูพัชรินทร์)" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+                        <input type="text" id="admin-teacher-subject" placeholder="ชื่อวิชา (เช่น คณิตศาสตร์, วิทยาศาสตร์)" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5">เลือกห้องเรียนที่สอน (เลือกได้หลายห้อง)</label>
+                            <div class="grid grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-40 overflow-y-auto" id="admin-class-checkboxes">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl text-sm transition">
+                            + เพิ่มคุณครูและวิชาสอน
+                        </button>
+                    </form>
+                    <div class="divide-y max-h-60 overflow-y-auto" id="admin-teacher-list">
+                        <!-- Render via JS -->
+                    </div>
+                </div>
+
+                <!-- Manage Students -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h3 class="font-bold text-slate-800 text-lg border-b pb-2"><i class="fa-solid fa-user-plus text-indigo-600 mr-2"></i>เพิ่มและจัดการนักเรียน</h3>
+                    
+                    <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-indigo-900"><i class="fa-solid fa-file-excel text-emerald-600 mr-1"></i> นำเข้ารายชื่อนักเรียนจากไฟล์ CSV / Google Sheet (คอลัมน์: รหัส, ชื่อ, ห้อง)</label>
+                        <input type="file" id="csv-file-input" accept=".csv, .txt" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                        <button type="button" onclick="importCSVStudents()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-xl transition">
+                            อัปโหลดและนำเข้ารายชื่อ
+                        </button>
+                    </div>
+
+                    <form onsubmit="handleAddStudent(event)" class="space-y-3 pt-2 border-t">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="admin-student-id" placeholder="รหัสประจำตัว" required class="border border-slate-300 rounded-xl p-2.5 text-sm">
+                            <select id="admin-student-class" required class="border border-slate-300 rounded-xl p-2.5 text-sm bg-white">
+                                <option value="">เลือกห้อง</option>
+                            </select>
+                        </div>
+                        <input type="text" id="admin-student-name" placeholder="ชื่อ-นามสกุล นักเรียน" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-xl text-sm transition">
+                            + เพิ่มนักเรียนรายบุคคล
+                        </button>
+                    </form>
+                    <div class="divide-y max-h-60 overflow-y-auto" id="admin-student-list">
+                        <!-- Render via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal เข้าสู่ระบบแอดมิน -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4">
+            <div class="text-center">
+                <i class="fa-solid fa-user-shield text-4xl text-indigo-600 mb-2"></i>
+                <h3 class="text-xl font-bold text-slate-800">เข้าสู่ระบบผู้ดูแลระบบ</h3>
+                <p class="text-xs text-slate-400">กรุณากรอกชื่อผู้ใช้และรหัสผ่านแอดมิน</p>
+            </div>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ผู้ใช้งาน</label>
+                    <input type="text" id="admin-user-input" placeholder="พิมพ์ชื่อผู้ใช้" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">รหัสผ่าน</label>
+                    <input type="password" id="admin-pass-input" placeholder="พิมพ์รหัสผ่าน" required class="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeAdminLoginModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-sm">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow">เข้าสู่ระบบ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่มภาระงานใหม่ -->
+    <div id="assign-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <h3 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-plus-circle text-emerald-600 mr-1"></i> เพิ่มภาระงานใหม่ (สร้างคอลัมน์)</h3>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่องาน / ภาระงาน (แสดงแถวบน)</label>
+                <input type="text" id="modal-assign-name" placeholder="เช่น งานสมุด1, แบบฝึกหน่วย1" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">รายละเอียดงาน (แสดงแถวล่าง)</label>
+                <input type="text" id="modal-assign-detail" placeholder="เช่น มาตราตัวสะกด, หน้า 2-24" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAssignModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-sm">ยกเลิก</button>
+                <button onclick="confirmAssignWork()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 shadow">เพิ่มงานลงในตาราง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        const AVAILABLE_CLASSES = ["ป.4A", "ป.4B", "ป.5A", "ป.5B", "ป.6A", "ป.6B", "ม.1", "ม.2", "ม.3", "ม.4", "ม.5", "ม.6"];
+
+        let store = {
+            schoolName: localStorage.getItem('schoolName') || 'โรงเรียนยุวพุทธิศึกษาอุปถัมภ์',
+            isAdminLoggedIn: false,
+            teachers: [
+                { id: 1, name: "ครู พัชรินทร์ ชินโนสอน", subject: "คณิตศาสตร์", classes: ["ป.4A", "ป.4B"] },
+                { id: 1_2, name: "ครู พัชรินทร์ ชินโนสอน", subject: "วิทยาศาสตร์", classes: ["ป.4A", "ป.4B", "ม.3"] },
+                { id: 2, name: "ครู ชฎาพร นวลพงษ์", subject: "ศิลปะ", classes: ["ป.4A", "ป.4B", "ป.5A", "ป.5B", "ป.6A", "ป.6B", "ม.1", "ม.2", "ม.3"] },
+                { id: 3, name: "ครู วธัญญา สีเงางาม", subject: "ภาษาจีน", classes: ["ป.4A", "ป.4B", "ป.5A", "ป.5B", "ป.6A", "ม.1", "ม.2", "ม.3"] }
+            ],
+            students: [
+                { studentId: "1001", name: "เด็กชายจอมเดชา ทศโยธิน", className: "ป.4A" },
+                { studentId: "1002", name: "เด็กหญิงชลธิชา ประกอบศรี", className: "ป.4A" },
+                { studentId: "1003", name: "เด็กชายชยพล โชคเหมาะ", className: "ป.4A" },
+                { studentId: "1004", name: "เด็กชายฐิตินันท์ สีละวัน", className: "ป.4A" },
+                { studentId: "1005", name: "เด็กชายเดชาพัชร แสนทวีสุข", className: "ป.4A" }
+            ],
+            taskColumns: [
+                { id: "col_1", subject: "คณิตศาสตร์", className: "ป.4A", name: "งานสมุด1", detail: "มาตราตัวสะกด" },
+                { id: "col_2", subject: "คณิตศาสตร์", className: "ป.4A", name: "งานสมุด2", detail: "คัดลายมือ" },
+                { id: "col_3", subject: "คณิตศาสตร์", className: "ป.4A", name: "แบบฝึกหน่วย1", detail: "หน้า 2-24" },
+                { id: "col_4", subject: "คณิตศาสตร์", className: "ป.4A", name: "เก็บคะแนน", detail: "หน่วยที่ 1" }
+            ],
+            assignments: [],
+            scriptUrl: localStorage.getItem('scriptUrl') || ''
+        };
+
+        window.onload = function() {
+            document.getElementById('school-name-display').innerText = store.schoolName;
+            document.getElementById('school-name-input').value = store.schoolName;
+            if (store.scriptUrl) {
+                document.getElementById('script-url-input').value = store.scriptUrl;
+                fetchDataFromGAS();
+            }
+            renderClassCheckboxes();
+            renderStudentClassDropdowns();
+            renderHomeroomDropdown();
+            renderTeacherOptions();
+            renderAdminLists();
+        };
+
+        function switchRole(role) {
+            ['student', 'homeroom', 'teacher', 'admin'].forEach(r => {
+                document.getElementById(`view-${r}`).classList.add('hidden');
+                document.getElementById(`tab-${r}`).className = "px-3 py-2 rounded-lg transition flex items-center gap-1.5 text-indigo-200 hover:text-white";
+            });
+            document.getElementById(`view-${role}`).classList.remove('hidden');
+            document.getElementById(`tab-${role}`).className = "px-3 py-2 rounded-lg transition flex items-center gap-1.5 bg-white text-indigo-900 shadow font-semibold";
+
+            if (role === 'homeroom') renderHomeroomDashboard();
+            if (role === 'teacher') renderMatrixTable();
+        }
+
+        function openAdminLoginModal() {
+            if (store.isAdminLoggedIn) switchRole('admin');
+            else document.getElementById('admin-login-modal').classList.remove('hidden');
+        }
+
+        function closeAdminLoginModal() { document.getElementById('admin-login-modal').classList.add('hidden'); }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('admin-user-input').value.trim();
+            const pass = document.getElementById('admin-pass-input').value.trim();
+
+            if (user === "MTSS" && pass === "0903") {
+                store.isAdminLoggedIn = true;
+                closeAdminLoginModal();
+                document.getElementById('admin-user-input').value = '';
+                document.getElementById('admin-pass-input').value = '';
+                switchRole('admin');
+            } else alert("ผู้ใช้งาน หรือ รหัสผ่าน ไม่ถูกต้อง!");
+        }
+
+        function lockAdmin() {
+            store.isAdminLoggedIn = false;
+            switchRole('student');
+            alert("ออกจากระบบแอดมินเรียบร้อยแล้ว");
+        }
+
+        function saveSchoolName() {
+            const name = document.getElementById('school-name-input').value.trim();
+            if (!name) return alert("กรุณากรอกชื่อโรงเรียน");
+            store.schoolName = name;
+            localStorage.setItem('schoolName', name);
+            document.getElementById('school-name-display').innerText = name;
+            alert("เปลี่ยนชื่อโรงเรียนเรียบร้อยแล้ว");
+        }
+
+        function renderClassCheckboxes() {
+            const container = document.getElementById('admin-class-checkboxes');
+            container.innerHTML = AVAILABLE_CLASSES.map(cls => `
+                <label class="flex items-center space-x-2 text-xs font-medium cursor-pointer">
+                    <input type="checkbox" name="teacher-class-cb" value="${cls}" class="rounded text-indigo-600 focus:ring-indigo-500">
+                    <span>${cls}</span>
+                </label>
+            `).join('');
+        }
+
+        function renderStudentClassDropdowns() {
+            const select = document.getElementById('admin-student-class');
+            select.innerHTML = '<option value="">เลือกห้อง</option>' + AVAILABLE_CLASSES.map(cls => `<option value="${cls}">${cls}</option>`).join('');
+        }
+
+        function renderHomeroomDropdown() {
+            const select = document.getElementById('homeroom-class-select');
+            select.innerHTML = AVAILABLE_CLASSES.map(cls => `<option value="${cls}">ชั้น ${cls}</option>`).join('');
+        }
+
+        function renderTeacherOptions() {
+            const select = document.getElementById('teacher-select');
+            const uniqueTeachersMap = new Map();
+            store.teachers.forEach(t => {
+                if (!uniqueTeachersMap.has(t.name)) uniqueTeachersMap.set(t.name, []);
+                uniqueTeachersMap.get(t.name).push(t);
+            });
+
+            let optionsHTML = '';
+            uniqueTeachersMap.forEach((tList, name) => optionsHTML += `<option value="${name}">${name}</option>`);
+            select.innerHTML = optionsHTML;
+            onTeacherSelectChange();
+        }
+
+        function onTeacherSelectChange() {
+            const teacherName = document.getElementById('teacher-select').value;
+            const assignedList = store.teachers.filter(t => t.name === teacherName);
+            const classSelect = document.getElementById('teacher-class-select');
+            
+            let optionsHTML = '';
+            assignedList.forEach(t => {
+                t.classes.forEach(cls => {
+                    optionsHTML += `<option value="${t.subject}|${cls}">${t.subject} - ห้อง ${cls}</option>`;
+                });
+            });
+            classSelect.innerHTML = optionsHTML || '<option value="">ไม่มีวิชาสอน</option>';
+            renderMatrixTable();
+        }
+
+        // MATRIX TABLE RENDER LOGIC (WITH DELETE COLUMN BUTTON)
+        function renderMatrixTable() {
+            const subClassVal = document.getElementById('teacher-class-select').value;
+            const thead = document.getElementById('matrix-thead');
+            const tbody = document.getElementById('matrix-tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            if (!subClassVal) {
+                tbody.innerHTML = `<tr><td class="p-6 text-center text-slate-400">กรุณาเลือกวิชาและห้องเรียน</td></tr>`;
+                return;
+            }
+
+            const [subject, className] = subClassVal.split('|');
+            const cols = store.taskColumns.filter(c => c.subject === subject && c.className === className);
+            const students = store.students.filter(s => s.className === className);
+
+            // 1. Render Headers (2 Rows with Delete Button)
+            let headerRow1 = `<tr class="border-b bg-slate-100 text-slate-800 font-bold border-black">
+                <th class="p-3 border-r border-slate-400 w-64 text-left">ชื่อ - นามสกุล / งาน</th>`;
+            let headerRow2 = `<tr class="border-b bg-slate-50 text-slate-700 font-bold border-black">
+                <th class="p-3 border-r border-slate-400 text-left">รายละเอียด</th>`;
+
+            if (cols.length === 0) {
+                headerRow1 += `<th class="p-3 text-slate-400 font-normal">ยังไม่มีงาน (กดปุ่มเพิ่มภาระงานใหม่ด้านบน)</th>`;
+                headerRow2 += `<th class="p-3"></th>`;
+            } else {
+                cols.forEach(c => {
+                    headerRow1 += `
+                        <th class="p-3 border-r border-slate-300 text-center min-w-[140px] relative group">
+                            <div>${c.name}</div>
+                        </th>`;
+                    headerRow2 += `
+                        <th class="p-3 border-r border-slate-300 text-center text-xs font-medium text-slate-600 min-w-[140px]">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <span>${c.detail}</span>
+                                <button onclick="deleteTaskColumn('${c.id}')" title="ลบงานนี้" class="text-rose-500 hover:text-rose-700 text-xs px-1.5 py-0.5 rounded hover:bg-rose-50 transition" style="cursor: pointer;">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </th>`;
+                });
+            }
+
+            headerRow1 += `</tr>`;
+            headerRow2 += `</tr>`;
+            thead.innerHTML = headerRow1 + headerRow2;
+
+            // 2. Render Student Rows
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" class="p-6 text-center text-slate-400">ไม่มีรายชื่อนักเรียนในห้อง ${className}</td></tr>`;
+                return;
+            }
+
+            students.forEach(s => {
+                let rowHTML = `<tr class="border-b hover:bg-slate-50 transition border-slate-300">
+                    <td class="p-3 font-medium border-r border-slate-400 text-slate-800">${s.name}</td>`;
+
+                if (cols.length === 0) {
+                    rowHTML += `<td class="p-3 text-center text-slate-300">-</td>`;
+                } else {
+                    cols.forEach(c => {
+                        let assign = store.assignments.find(a => a.studentId === s.studentId && a.columnId === c.id);
+                        let statusVal = assign ? assign.status : 'submitted';
+
+                        // Colors: ส่ง (เขียว), งานไม่เรียบร้อย (ส้ม/แอมเบอร์), ยังไม่ส่ง (แดง)
+                        let selectBg = 'bg-emerald-100 border-emerald-300 text-emerald-800 font-semibold';
+                        if (statusVal === 'incomplete') selectBg = 'bg-amber-100 border-amber-300 text-amber-800 font-semibold';
+                        if (statusVal === 'pending') selectBg = 'bg-rose-100 border-rose-300 text-rose-800 font-semibold';
+
+                        rowHTML += `
+                            <td class="p-2 border-r border-slate-300 text-center">
+                                <select onchange="updateMatrixStatus('${s.studentId}', '${c.id}', this.value)" class="w-full text-xs border rounded-full px-3 py-1.5 focus:outline-none cursor-pointer ${selectBg}">
+                                    <option value="submitted" ${statusVal === 'submitted' ? 'selected' : ''}>ส่ง</option>
+                                    <option value="incomplete" ${statusVal === 'incomplete' ? 'selected' : ''}>งานไม่เรียบร้อย</option>
+                                    <option value="pending" ${statusVal === 'pending' ? 'selected' : ''}>ยังไม่ส่ง</option>
+                                </select>
+                            </td>
+                        `;
+                    });
+                }
+
+                rowHTML += `</tr>`;
+                tbody.innerHTML += rowHTML;
+            });
+        }
+
+        function updateMatrixStatus(studentId, columnId, newStatus) {
+            let item = store.assignments.find(a => a.studentId === studentId && a.columnId === columnId);
+            if (item) item.status = newStatus;
+            else {
+                const student = store.students.find(s => s.studentId === studentId);
+                const col = store.taskColumns.find(c => c.id === columnId);
+                store.assignments.push({
+                    id: Date.now() + Math.random(),
+                    studentId: studentId,
+                    studentName: student ? student.name : '',
+                    columnId: columnId,
+                    subject: col ? col.subject : '',
+                    className: col ? col.className : '',
+                    assignmentName: col ? col.name : '',
+                    status: newStatus
+                });
+            }
+            renderMatrixTable();
+        }
+
+        function deleteTaskColumn(columnId) {
+            if (confirm("ต้องการลบภาระงาน (คอลัมน์นี้) รวมทั้งข้อมูลการส่งงานของนักเรียนทั้งหมดใช่หรือไม่?")) {
+                store.taskColumns = store.taskColumns.filter(c => c.id !== columnId);
+                store.assignments = store.assignments.filter(a => a.columnId !== columnId);
+                renderMatrixTable();
+            }
+        }
+
+        function openAssignModal() { document.getElementById('assign-modal').classList.remove('hidden'); }
+        function closeAssignModal() { document.getElementById('assign-modal').classList.add('hidden'); }
+
+        function confirmAssignWork() {
+            const name = document.getElementById('modal-assign-name').value.trim();
+            const detail = document.getElementById('modal-assign-detail').value.trim();
+            const subClassVal = document.getElementById('teacher-class-select').value;
+
+            if (!name) return alert("กรุณากรอกชื่องาน");
+            if (!subClassVal) return alert("กรุณาเลือกวิชาและห้องเรียน");
+
+            const [subject, className] = subClassVal.split('|');
+            const newColId = 'col_' + Date.now();
+
+            store.taskColumns.push({ id: newColId, subject, className, name, detail: detail || '-' });
+
+            closeAssignModal();
+            document.getElementById('modal-assign-name').value = '';
+            document.getElementById('modal-assign-detail').value = '';
+            renderMatrixTable();
+            alert(`เพิ่มภาระงาน "${name}" เรียบร้อยแล้ว`);
+        }
+
+        // HOMEROOM & STUDENT SEARCH LOGIC
+        function renderHomeroomDashboard() {
+            const selectedClass = document.getElementById('homeroom-class-select').value || AVAILABLE_CLASSES[0];
+            document.getElementById('homeroom-title').innerText = `สรุปสถานะการส่งงานประจำห้อง ${selectedClass}`;
+
+            const classStudents = store.students.filter(s => s.className === selectedClass);
+            const tbody = document.getElementById('homeroom-table-body');
+            tbody.innerHTML = '';
+
+            if (classStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400">ไม่พบบุคลากรนักเรียนในชั้น ${selectedClass}</td></tr>`;
+                return;
+            }
+
+            classStudents.forEach(s => {
+                const myWorks = store.assignments.filter(a => a.studentId === s.studentId);
+                const totalWorks = store.taskColumns.filter(c => c.className === selectedClass).length;
+                const submittedCount = myWorks.filter(w => w.status === 'submitted').length;
+                const incompleteCount = myWorks.filter(w => w.status === 'incomplete').length;
+                const pendingCount = totalWorks - (submittedCount + incompleteCount);
+                const percent = totalWorks > 0 ? Math.round((submittedCount / totalWorks) * 100) : 0;
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-indigo-600 border-r border-slate-200">${s.studentId}</td>
+                        <td class="p-3 font-medium border-r border-slate-200">${s.name}</td>
+                        <td class="p-3 text-center border-r border-slate-200">${totalWorks}</td>
+                        <td class="p-3 text-center font-semibold text-emerald-600 border-r border-slate-200">${submittedCount}</td>
+                        <td class="p-3 text-center font-semibold text-amber-600 border-r border-slate-200">${incompleteCount}</td>
+                        <td class="p-3 text-center font-semibold text-rose-500 border-r border-slate-200">${pendingCount > 0 ? pendingCount : 0}</td>
+                        <td class="p-3 text-center">
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-1">
+                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${percent}%"></div>
+                            </div>
+                            <span class="text-xs text-slate-500">${percent}%</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function searchStudentWork() {
+            const inputId = document.getElementById('student-search-id').value.trim();
+            const student = store.students.find(s => s.studentId === inputId);
+            
+            if (!student) return alert("ไม่พบรหัสประจำตัวนักเรียนนี้ในระบบ");
+
+            document.getElementById('res-student-name').innerText = student.name;
+            document.getElementById('res-student-id').innerText = student.studentId;
+            document.getElementById('res-student-class').innerText = student.className;
+
+            const myCols = store.taskColumns.filter(c => c.className === student.className);
+            const myWorks = store.assignments.filter(a => a.studentId === inputId);
+            const submittedCount = myWorks.filter(w => w.status === 'submitted').length;
+
+            document.getElementById('res-student-summary').innerText = `ส่งแล้ว ${submittedCount}/${myCols.length} งาน`;
+
+            const tbody = document.getElementById('student-work-table-body');
+            tbody.innerHTML = '';
+
+            if (myCols.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-400">ยังไม่มีการมอบหมายงานในระบบ</td></tr>`;
+            } else {
+                myCols.forEach(col => {
+                    let w = store.assignments.find(a => a.studentId === inputId && a.columnId === col.id);
+                    let statusVal = w ? w.status : 'pending';
+
+                    let statusBadge = statusVal === 'submitted' 
+                        ? `<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold">ส่งแล้ว</span>`
+                        : statusVal === 'incomplete' 
+                        ? `<span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold">งานไม่เรียบร้อย</span>`
+                        : `<span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-semibold">ยังไม่ส่ง</span>`;
+
+                    tbody.innerHTML += `
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-4 font-medium border-r border-slate-200">${col.subject} (${col.className})</td>
+                            <td class="p-4 border-r border-slate-200">${col.name} <span class="text-xs text-slate-400">(${col.detail})</span></td>
+                            <td class="p-4 text-center border-r border-slate-200">${statusBadge}</td>
+                            <td class="p-4 text-center font-semibold text-indigo-600">-</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('student-result').classList.remove('hidden');
+        }
+
+        // ADMIN MANAGEMENT FUNCTIONS
+        function handleAddTeacher(e) {
+            e.preventDefault();
+            const name = document.getElementById('admin-teacher-name').value.trim();
+            const subject = document.getElementById('admin-teacher-subject').value.trim();
+            const selectedClasses = Array.from(document.querySelectorAll('input[name="teacher-class-cb"]:checked')).map(cb => cb.value);
+
+            if (selectedClasses.length === 0) return alert("กรุณาเลือกอย่างน้อย 1 ห้องเรียนที่สอน");
+
+            store.teachers.push({ id: Date.now(), name, subject, classes: selectedClasses });
+            document.getElementById('admin-teacher-name').value = '';
+            document.getElementById('admin-teacher-subject').value = '';
+            document.querySelectorAll('input[name="teacher-class-cb"]').forEach(cb => cb.checked = false);
+            
+            renderAdminLists();
+            renderTeacherOptions();
+            alert("เพิ่มข้อมูลครูผู้สอนเรียบร้อยแล้ว");
+        }
+
+        function deleteTeacher(id) {
+            if (confirm("ต้องการลบรายการสอนนี้ใช่หรือไม่?")) {
+                store.teachers = store.teachers.filter(t => t.id !== id);
+                renderAdminLists();
+                renderTeacherOptions();
+            }
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('admin-student-id').value.trim();
+            const className = document.getElementById('admin-student-class').value;
+            const name = document.getElementById('admin-student-name').value.trim();
+
+            if (store.students.some(s => s.studentId === studentId)) return alert("มีรหัสประจำตัวนักเรียนนี้ในระบบแล้ว");
+
+            store.students.push({ studentId, name, className });
+            document.getElementById('admin-student-id').value = '';
+            document.getElementById('admin-student-name').value = '';
+            renderAdminLists();
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm(`ต้องการลบรหัสประจำตัว ${studentId} ออกจากระบบใช่หรือไม่?`)) {
+                store.students = store.students.filter(s => s.studentId !== studentId);
+                store.assignments = store.assignments.filter(a => a.studentId !== studentId);
+                renderAdminLists();
+            }
+        }
+
+        function importCSVStudents() {
+            const fileInput = document.getElementById('csv-file-input');
+            if (fileInput.files.length === 0) return alert("กรุณาเลือกไฟล์ CSV หรือ TXT รายชื่อนักเรียนก่อน");
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let addedCount = 0;
+
+                lines.forEach(line => {
+                    let cols = line.split(',').map(c => c.trim().replace(/^["']|["']$/g, ''));
+                    if (cols.length >= 3) {
+                        let sId = cols[0];
+                        let sName = cols[1];
+                        let sClass = cols[2];
+
+                        if (sId && sName && sClass && !store.students.some(s => s.studentId === sId)) {
+                            store.students.push({ studentId: sId, name: sName, className: sClass });
+                            addedCount++;
+                        }
+                    }
+                });
+
+                fileInput.value = '';
+                renderAdminLists();
+                alert(`นำเข้านักเรียนสำเร็จ เพิ่มรายชื่อใหม่ ${addedCount} คน`);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function renderAdminLists() {
+            const tList = document.getElementById('admin-teacher-list');
+            tList.innerHTML = store.teachers.map(t => `
+                <div class="py-2.5 flex justify-between items-center text-sm">
+                    <div>
+                        <div class="font-medium">${t.name} - <span class="text-indigo-600 font-semibold">${t.subject}</span></div>
+                        <div class="text-xs text-slate-400">ห้อง: ${t.classes.join(', ')}</div>
+                    </div>
+                    <button onclick="deleteTeacher(${t.id})" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+
+            const sList = document.getElementById('admin-student-list');
+            sList.innerHTML = store.students.map(s => `
+                <div class="py-2.5 flex justify-between items-center text-sm">
+                    <div>
+                        <span class="font-semibold text-indigo-600 mr-2">${s.studentId}</span> ${s.name} <span class="text-xs bg-slate-100 px-2 py-0.5 rounded ml-1">${s.className}</span>
+                    </div>
+                    <button onclick="deleteStudent('${s.studentId}')" class="text-rose-500 hover:text-rose-700 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        // GOOGLE SHEET SYNC LOGIC
+        function saveScriptUrl() {
+            const url = document.getElementById('script-url-input').value.trim();
+            store.scriptUrl = url;
+            localStorage.setItem('scriptUrl', url);
+            alert('บันทึก Web App URL เรียบร้อยแล้ว');
+            fetchDataFromGAS();
+        }
+
+        function syncDataToGoogleSheet() {
+            if (!store.scriptUrl) return alert("กรุณาใส่ Web App URL ในโหมดแอดมินก่อนครับ");
+            
+            fetch(store.scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'saveData', ...store })
+            }).then(() => alert("ส่งข้อมูลไปบันทึกบน Google Sheet เรียบร้อยแล้ว!"))
+              .catch(err => alert("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + err));
+        }
+
+        function fetchDataFromGAS() {
+            if (!store.scriptUrl) return;
+            fetch(`${store.scriptUrl}?action=getData`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.teachers && data.teachers.length > 0) store.teachers = data.teachers;
+                    if (data.students && data.students.length > 0) store.students = data.students;
+                    if (data.assignments && data.assignments.length > 0) store.assignments = data.assignments;
+                    if (data.taskColumns && data.taskColumns.length > 0) store.taskColumns = data.taskColumns;
+                    renderTeacherOptions();
+                    renderAdminLists();
+                }).catch(err => console.log("FETCH ERROR", err));
+        }
+    </script>
+</body>
+</html>
